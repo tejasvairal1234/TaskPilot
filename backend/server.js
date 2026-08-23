@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connect } from "mongoose";
+import connectDB from "./src/db/connect.js";
 
 dotenv.config();
 const app = express();
@@ -11,7 +12,7 @@ const server = async () =>
 {
     try
     {
-        // await connect();
+        await connectDB();
 
         app.listen(port, () => 
         {
