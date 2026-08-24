@@ -56,9 +56,9 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Generate JWT token
-    const token = generateToken(user._id);
+    const refreshToken = generateToken(user._id);
 
-    if (!token) {
+    if (!refreshToken) {
       return res.status(500).json({
         success: false,
         message: "Failed to generate authentication token",
@@ -66,12 +66,11 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Set authentication cookie
-    res.cookie("token", token, {
-      path: "/",
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(201).json({
@@ -86,31 +85,34 @@ export const registerUser = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error("Register user error:", error);
 
-    // MongoDB duplicate-key error
-    if (error.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: "Email is already registered",
-      });
-    }
-
-    // Mongoose validation error
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map(
-        (err) => err.message
-      );
-
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: messages,
-      });
-    }
-
-    // Unexpected server error
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 });
+
+export const login = asyncHandler(async (req, res) =>
+{
+    const {email, password} = req.body;
+    
+    if(!email || !password)
+    {
+        return res.status(400).json({message: "All fields are required"});
+    }
+
+    const userExists = await User.findOne({email});
+
+    if(!userExists)
+    {
+        return res.status(404).json({message: "User not found"});
+    }
+
+    const isMatch = await bcrypt.compare(password, userExists.password);
+
+    if(!isMatch)
+    {
+        return res.status(400).json({message:"Invalid Password"});
+    }
+
+})
