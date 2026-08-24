@@ -8,7 +8,7 @@ userRoute.get("/logout",);
 userRoute.get("/user",);
 userRoute.patch("/user",);
 
-userRoute.delete("/admin/user/:id",);
+userRoute.delete("/delete-user/:id",);
 userRoute.post("/forgot-password",);
 userRoute.post("/reset-password",);
 userRoute.post("/change-password",);
