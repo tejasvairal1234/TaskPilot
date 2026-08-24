@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./src/db/connect.js";
 import userRoute from "./src/routes/userRoute.js";
+import taskRoute from "./src/routes/taskRoute.js";
 
 dotenv.config();
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", userRoute)
+app.use("/api/task", taskRoute);
 
 const server = async () => {
   try {
