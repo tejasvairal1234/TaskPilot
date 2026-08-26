@@ -158,10 +158,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(
-      refreshToken, 
-      process.env.REFRESH_TOKEN_SECRET
-    );
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     const accessToken = generateAccessToken(decoded.userID);
 
@@ -176,4 +173,17 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       code: "REFRESH_TOKEN_EXPIRED",
     });
   }
+});
+
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logout successful",
+  });
 });
