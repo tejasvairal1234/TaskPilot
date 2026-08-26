@@ -175,6 +175,10 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+// ==========================
+// Refresh
+// ==========================
+
 export const logoutUser = asyncHandler(async (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
