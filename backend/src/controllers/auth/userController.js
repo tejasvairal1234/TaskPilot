@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import User from "../../models/auth/UserModel.js";
 
 import {
@@ -74,7 +75,6 @@ export const registerUser = asyncHandler(async (req, res) => {
   });
 });
 
-
 // ==========================
 // LOGIN USER
 // ==========================
@@ -106,10 +106,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   }
 
   // Compare password
-  const isPasswordMatch = await bcrypt.compare(
-    password,
-    user.password
-  );
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
 
   if (!isPasswordMatch) {
     return res.status(401).json({
@@ -143,4 +140,40 @@ export const loginUser = asyncHandler(async (req, res) => {
       email: user.email,
     },
   });
+});
+
+// ==========================
+// Refresh
+// ==========================
+
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      success: false,
+      message: "Refresh token not found",
+      code: "REFRESH_TOKEN_MISSING",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(
+      refreshToken, 
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const accessToken = generateAccessToken(decoded.userID);
+
+    return res.status(200).json({
+      success: true,
+      accessToken,
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Refresh token expired or invalid",
+      code: "REFRESH_TOKEN_EXPIRED",
+    });
+  }
 });

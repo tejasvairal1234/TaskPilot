@@ -5,6 +5,6 @@ const userRoute = express.Router();
 
 userRoute.post("/register", registerUser);
 userRoute.post("/login", loginUser);
-userRoute.post("/refresh",);
-userRoute.post("/logout",)
+userRoute.post("/refresh", refreshAccessToken);
+// userRoute.post("/logout", );
 export default userRoute;
