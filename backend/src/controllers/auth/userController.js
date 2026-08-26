@@ -1,109 +1,146 @@
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import User from "../../models/auth/UserModel.js";
+
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../helpers/generateToken.js";
 
+// ==========================
+// REGISTER USER
+// ==========================
+
 export const registerUser = asyncHandler(async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-    // Validate request body
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
-    // Normalize email
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Check if user already exists
-    const userExists = await User.findOne({
-      email: normalizedEmail,
-    });
-
-    if (userExists) {
-      return res.status(409).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
-
-    // Hash password
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = await User.create({
-      name: name.trim(),
-      email: normalizedEmail,
-      password: hashPassword,
-    });
-
-    if (!user) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to create user",
-      });
-    }
-
-    // Generate JWT tokens
-    const refreshToken = generateRefreshToken(user._id);
-    const accessToken = generateAccessToken(user._id);
-
-    if (!refreshToken || !accessToken) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to generate JWT tokens",
-      });
-    }
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "User Successfully registered",
-      accessToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    console.error("Register user error:", error);
-
-    return res.status(500).json({
+  // Validate request body
+  if (!name || !email || !password) {
+    return res.status(400).json({
       success: false,
-      message: "Internal server error",
+      message: "All fields are required",
     });
   }
+
+  // Normalize email
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Check if user already exists
+  const userExists = await User.findOne({
+    email: normalizedEmail,
+  });
+
+  if (userExists) {
+    return res.status(409).json({
+      success: false,
+      message: "User already exists",
+    });
+  }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create user
+  const user = await User.create({
+    name: name.trim(),
+    email: normalizedEmail,
+    password: hashedPassword,
+  });
+
+  // Generate tokens
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
+
+  // Store refresh token in HttpOnly cookie
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: "User successfully registered",
+
+    // Frontend can store this in sessionStorage
+    accessToken,
+
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+  });
 });
+
+
+// ==========================
+// LOGIN USER
+// ==========================
 
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
+  // Validate request body
   if (!email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({
+      success: false,
+      message: "Email and password are required",
+    });
   }
 
-  const userExists = await User.findOne({ email });
+  // Normalize email
+  const normalizedEmail = email.trim().toLowerCase();
 
-  if (!userExists) {
-    return res.status(404).json({ message: "User not found" });
+  // Find user
+  const user = await User.findOne({
+    email: normalizedEmail,
+  });
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email or password",
+    });
   }
 
-  const isMatch = await bcrypt.compare(password, userExists.password);
+  // Compare password
+  const isPasswordMatch = await bcrypt.compare(
+    password,
+    user.password
+  );
 
-  if (!isMatch) {
-    return res.status(400).json({ message: "Invalid Password" });
+  if (!isPasswordMatch) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email or password",
+    });
   }
+
+  // Generate tokens
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
+
+  // Refresh token → HttpOnly cookie
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Login successful",
+
+    // Frontend → sessionStorage
+    accessToken,
+
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+  });
 });
