@@ -1,7 +1,10 @@
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import User from "../../models/auth/UserModel.js";
-
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../../helpers/generateToken.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   try {
@@ -47,17 +50,17 @@ export const registerUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // Generate JWT token
-    const refreshToken = generateToken(user._id);
+    // Generate JWT tokens
+    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessToken(user._id);
 
-    if (!refreshToken) {
+    if (!refreshToken || !accessToken) {
       return res.status(500).json({
         success: false,
-        message: "Failed to generate authentication token",
+        message: "Failed to generate JWT tokens",
       });
     }
 
-    // Set authentication cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -67,7 +70,8 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "User successfully registered",
+      message: "User Successfully registered",
+      accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -84,27 +88,22 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-export const loginUser = asyncHandler(async (req, res) =>
-{
-    const {email, password} = req.body;
-    
-    if(!email || !password)
-    {
-        return res.status(400).json({message: "All fields are required"});
-    }
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    const userExists = await User.findOne({email});
+  if (!email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
-    if(!userExists)
-    {
-        return res.status(404).json({message: "User not found"});
-    }
+  const userExists = await User.findOne({ email });
 
-    const isMatch = await bcrypt.compare(password, userExists.password);
+  if (!userExists) {
+    return res.status(404).json({ message: "User not found" });
+  }
 
-    if(!isMatch)
-    {
-        return res.status(400).json({message:"Invalid Password"});
-    }
+  const isMatch = await bcrypt.compare(password, userExists.password);
 
-})
+  if (!isMatch) {
+    return res.status(400).json({ message: "Invalid Password" });
+  }
+});

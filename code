@@ -1,0 +1,23 @@
+const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
+
+  // Store refresh token in HttpOnly cookie
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  // Response
+  return res.status(201).json({
+    success: true,
+    message: "User successfully registered",
+    accessToken,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+  });
+});
