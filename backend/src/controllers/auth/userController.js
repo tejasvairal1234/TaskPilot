@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import User from "../../models/auth/UserModel.js";
-import generateToken from "../../helpers/generateToken.js";
+
 
 export const registerUser = asyncHandler(async (req, res) => {
   try {
@@ -12,14 +12,6 @@ export const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
-      });
-    }
-
-    // Validate password length
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 6 characters long",
       });
     }
 
@@ -92,7 +84,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-export const login = asyncHandler(async (req, res) =>
+export const loginUser = asyncHandler(async (req, res) =>
 {
     const {email, password} = req.body;
     
