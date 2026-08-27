@@ -42,3 +42,30 @@ export const getTasks = asyncHandler(async (req, res) => {
     tasks,
   });
 });
+
+export const getTaskByTitle = asyncHandler(async (req, res) => {
+  const { title } = req.query;
+  if (!title || !title.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: "Task title is required",
+    });
+  }
+
+  const task = await Task.find({
+    title: title.trim(),
+    user: req.user._id,
+  });
+
+  if (!task) {
+    return res.status(404).json({
+      success: false,
+      message: "Task not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    task,
+  });
+});
