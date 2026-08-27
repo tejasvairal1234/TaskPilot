@@ -136,3 +136,27 @@ export const updateTask = asyncHandler(async (req, res) => {
     task: updatedTask,
   });
 });
+
+export const deleteTask = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Find task belonging to logged-in user
+  const task = await Task.findOne({
+    _id: id,
+    user: req.user._id,
+  });
+
+  if (!task) {
+    return res.status(404).json({
+      success: false,
+      message: "Task not found",
+    });
+  }
+
+  await Task.findByIdAndDelete(id);
+
+  return res.status(200).json({
+    success: true,
+    message: "Task deleted successfully",
+  });
+});
