@@ -30,3 +30,15 @@ export const createTask = asyncHandler(async (req, res) => {
     task,
   });
 });
+
+export const getTasks = asyncHandler(async (req, res) => {
+  const tasks = await Task.find({
+    user: req.user._id,
+  }).sort({ createdAt: -1 });
+
+  return res.status(200).json({
+    success: true,
+    count: tasks.length,
+    tasks,
+  });
+});
