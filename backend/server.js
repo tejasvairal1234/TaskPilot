@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./src/db/connect.js";
 import userRoute from "./src/routes/userRoute.js";
 import taskRoute from "./src/routes/taskRoute.js";
+import errorHandler from "./src/middlewares/errorMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -14,6 +15,8 @@ app.use(cookieParser());
 
 app.use("/api/auth", userRoute)
 app.use("/api/task", taskRoute);
+
+app.use(errorHandler);
 
 const server = async () => {
   try {
