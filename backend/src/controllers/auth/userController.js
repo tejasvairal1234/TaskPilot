@@ -48,6 +48,8 @@ export const registerUser = asyncHandler(async (req, res) => {
     password: hashedPassword,
   });
 
+  console.log(user._id);
+
   // Generate tokens
   const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id);

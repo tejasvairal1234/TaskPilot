@@ -1,4 +1,5 @@
 import asyncHandler from "express-async-handler";
+import Task from "../../models/tasks/TaskModel.js";
 
 export const createTask = asyncHandler(async (req, res) => {
   const { title, description, dueDate, status, completed, priority } = req.body;
