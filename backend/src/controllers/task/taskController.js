@@ -2,26 +2,22 @@ import asyncHandler from "express-async-handler";
 import Task from "../../models/tasks/TaskModel.js";
 
 export const createTask = asyncHandler(async (req, res) => {
-  const { title, description, dueDate, status, completed, priority } = req.body;
-
-  // Validate title
-  if (!title || !title.trim()) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide a title",
-    });
-  }
-
-  // Create task
-  const task = await Task.create({
-    title: title.trim(),
+  const {
+    title,
     description,
-    dueDate,
+    startDate,
+    endDate,
     status,
-    completed,
     priority,
+  } = req.body;
 
-    // Logged in user
+  const task = await Task.create({
+    title,
+    description,
+    startDate,
+    endDate,
+    status,
+    priority,
     user: req.user._id,
   });
 
@@ -46,6 +42,7 @@ export const getTasks = asyncHandler(async (req, res) => {
 
 export const getTaskByTitle = asyncHandler(async (req, res) => {
   const { title } = req.query;
+
   if (!title || !title.trim()) {
     return res.status(400).json({
       success: false,
@@ -61,7 +58,7 @@ export const getTaskByTitle = asyncHandler(async (req, res) => {
     },
   });
 
-  if (!tasks) {
+  if (tasks.length === 0) {
     return res.status(404).json({
       success: false,
       message: "Task not found",
@@ -70,6 +67,7 @@ export const getTaskByTitle = asyncHandler(async (req, res) => {
 
   return res.status(200).json({
     success: true,
+    count: tasks.length,
     tasks,
   });
 });
@@ -77,7 +75,14 @@ export const getTaskByTitle = asyncHandler(async (req, res) => {
 export const updateTask = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const { title, description, dueDate, status, completed, priority } = req.body;
+  const {
+    title,
+    description,
+    startDate,
+    endDate,
+    status,
+    priority,
+  } = req.body;
 
   // Find task belonging to logged-in user
   const task = await Task.findOne({
@@ -94,7 +99,7 @@ export const updateTask = asyncHandler(async (req, res) => {
 
   // Update only provided fields
   if (title !== undefined) {
-    if (!title.trim()) {
+    if (typeof title !== "string" || !title.trim()) {
       return res.status(400).json({
         success: false,
         message: "Title cannot be empty",
@@ -108,16 +113,16 @@ export const updateTask = asyncHandler(async (req, res) => {
     task.description = description;
   }
 
-  if (dueDate !== undefined) {
-    task.dueDate = dueDate;
+  if (startDate !== undefined) {
+    task.startDate = startDate;
+  }
+
+  if (endDate !== undefined) {
+    task.endDate = endDate;
   }
 
   if (status !== undefined) {
     task.status = status;
-  }
-
-  if (completed !== undefined) {
-    task.completed = completed;
   }
 
   if (priority !== undefined) {
