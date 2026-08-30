@@ -30,3 +30,15 @@ const baseTaskSchema = z.object({
 
   priority: z.enum(["low", "medium", "high"]).optional(),
 });
+
+export const createTaskSchema = baseTaskSchema.refine(
+  (data) => {
+    if (!data.endDate || !data.startDate) return true;
+
+    return data.endDate >= data.startDate;
+  },
+  {
+    message: "End date cannot be before start date",
+    path: ["endDate"],
+  },
+);
