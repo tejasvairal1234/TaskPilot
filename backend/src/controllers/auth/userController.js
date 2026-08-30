@@ -15,7 +15,6 @@ import {
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  
   // Check if user already exists
   const userExists = await User.findOne({
     email,
@@ -74,21 +73,10 @@ export const registerUser = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate request body
-  if (!email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Email and password are required",
-    });
-  }
-
-  // Normalize email
-  const normalizedEmail = email.trim().toLowerCase();
-
   // Find user
   const user = await User.findOne({
-    email: normalizedEmail,
-  });
+    email,
+  }).select("+password");
 
   if (!user) {
     return res.status(401).json({
