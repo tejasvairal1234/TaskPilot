@@ -162,7 +162,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-    const accessToken = generateAccessToken(decoded.userID);
+    const accessToken = generateAccessToken(decoded.userId);
 
     return res.status(200).json({
       success: true,

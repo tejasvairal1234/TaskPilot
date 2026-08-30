@@ -53,12 +53,15 @@ export const getTaskByTitle = asyncHandler(async (req, res) => {
     });
   }
 
-  const task = await Task.find({
-    title: title.trim(),
+  const tasks = await Task.find({
     user: req.user._id,
+    title: {
+      $regex: title.trim(),
+      $options: "i",
+    },
   });
 
-  if (!task) {
+  if (!tasks) {
     return res.status(404).json({
       success: false,
       message: "Task not found",
@@ -67,22 +70,14 @@ export const getTaskByTitle = asyncHandler(async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    task,
+    tasks,
   });
 });
-
 
 export const updateTask = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const {
-    title,
-    description,
-    dueDate,
-    status,
-    completed,
-    priority,
-  } = req.body;
+  const { title, description, dueDate, status, completed, priority } = req.body;
 
   // Find task belonging to logged-in user
   const task = await Task.findOne({
