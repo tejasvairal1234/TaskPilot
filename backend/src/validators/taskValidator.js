@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { tr } from "zod/v4/locales";
 
 const baseTaskSchema = z.object({
   title: z
@@ -32,6 +33,18 @@ const baseTaskSchema = z.object({
 });
 
 export const createTaskSchema = baseTaskSchema.refine(
+  (data) => {
+    if (!data.endDate || !data.startDate) return true;
+
+    return data.endDate >= data.startDate;
+  },
+  {
+    message: "End date cannot be before start date",
+    path: ["endDate"],
+  },
+);
+
+export const updateTaskSchema = baseTaskSchema.partial().refine(
   (data) => {
     if (!data.endDate || !data.startDate) return true;
 
