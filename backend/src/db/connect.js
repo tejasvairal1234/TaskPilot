@@ -1,13 +1,20 @@
 import mongoose from "mongoose";
 
-const url = process.env.MONGODB_URL || "mongodb://localhost:27017/taskpilot";
-
 const connectDB = async () => {
+  const url =
+    process.env.MONGODB_URL || "mongodb://localhost:27017/taskpilot";
+
   try {
-    await mongoose.connect(url);
-    console.log("Connected Database");
+    await mongoose.connect(url, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log("MongoDB connected");
+    }
   } catch (err) {
-    console.log("Failed to connect to database", err.message);
+    console.error("MongoDB connection error:", err.message);
     process.exit(1);
   }
 };
