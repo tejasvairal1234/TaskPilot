@@ -16,33 +16,39 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        "Please provide a valid email address",
+      ],
     },
 
     password: {
       type: String,
-      required: [true, "Please provide password"],
-      select: false,
+      required: [true, "Please provide a password"],
+      minlength: [8, "Password must be at least 8 characters"],
+      select: false, // Never returned in queries by default
     },
 
     photo: {
       type: String,
-      default: "https://avatars.githubusercontent.com/u/19819005?v=4",
+      default: "",
     },
 
     bio: {
       type: String,
-      default: "I am a new user.",
+      default: "",
       maxlength: [500, "Bio cannot exceed 500 characters"],
     },
 
-    isVerified: {
-      type: Boolean,
-      default: false,
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
   },
   {
     timestamps: true,
-    minimize: true,
+    minimize: false,
   }
 );
 
