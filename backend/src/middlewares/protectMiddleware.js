@@ -9,6 +9,7 @@ const protect = asyncHandler(async (req, res, next) => {
     return res.status(401).json({
       success: false,
       message: "Access token required",
+      code: "ACCESS_TOKEN_MISSING",
     });
   }
 
@@ -17,12 +18,15 @@ const protect = asyncHandler(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId).select(
+      "-password -__v"
+    );
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: "User not found or account deleted",
+        code: "USER_NOT_FOUND",
       });
     }
 
@@ -31,8 +35,14 @@ const protect = asyncHandler(async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Access token expired or invalid",
-      code: "ACCESS_TOKEN_ EXPIRED",
+      message:
+        error.name === "TokenExpiredError"
+          ? "Access token expired"
+          : "Access token invalid",
+      code:
+        error.name === "TokenExpiredError"
+          ? "ACCESS_TOKEN_EXPIRED"
+          : "ACCESS_TOKEN_INVALID",
     });
   }
 });
