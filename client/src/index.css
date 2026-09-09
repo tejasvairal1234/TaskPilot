@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Centralized Theme Design Tokens ──────────────────────────────────────── */
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #eef2ff;
+  --accent-foreground: #4338ca;
+  --danger: #ef4444;
+  --danger-foreground: #ffffff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --sidebar: #ffffff;
+  --header: #ffffff;
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --card-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+[data-theme="dark"],
+.dark {
+  --background: #0f1117;
+  --foreground: #f8fafc;
+  --card: #191d27;
+  --card-foreground: #f8fafc;
+  --muted: #202532;
+  --muted-foreground: #94a3b8;
+  --border: rgba(255, 255, 255, 0.07);
+  --input: #1d2330;
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --primary-foreground: #ffffff;
+  --secondary: #202532;
+  --secondary-foreground: #f8fafc;
+  --accent: #252a3a;
+  --accent-foreground: #a5b4fc;
+  --danger: #f87171;
+  --danger-foreground: #ffffff;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --sidebar: #141820;
+  --header: #141820;
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+  --card-shadow-hover: 0 4px 12px -2px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+}
+
+/* ─── Global Base Styles ───────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--foreground);
+    background-color: var(--background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Theme-aware Scrollbar */
+  ::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+  }
+  ::-webkit-scrollbar-track { 
+    background: transparent; 
+  }
+  ::-webkit-scrollbar-thumb { 
+    background: #cbd5e1; 
+    border-radius: 3px; 
+  }
+  .dark ::-webkit-scrollbar-thumb,
+  [data-theme="dark"] ::-webkit-scrollbar-thumb { 
+    background: rgba(255, 255, 255, 0.1); 
+  }
+  ::-webkit-scrollbar-thumb:hover { 
+    background: #94a3b8; 
+  }
+  .dark ::-webkit-scrollbar-thumb:hover,
+  [data-theme="dark"] ::-webkit-scrollbar-thumb:hover { 
+    background: rgba(255, 255, 255, 0.18); 
+  }
+}
+
+/* ─── Component Classes ────────────────────────────────────────────────────── */
+@layer components {
+  /* Input base */
+  .input-base {
+    @apply w-full px-3.5 py-2.5 min-h-[44px] rounded-lg text-sm transition-all duration-150
+           focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed;
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+  }
+
+  .input-base:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .input-base::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.8;
+  }
+
+  .input-error {
+    border-color: var(--danger) !important;
+  }
+  .input-error:focus {
+    --tw-ring-color: rgba(239, 68, 68, 0.25) !important;
+    border-color: var(--danger) !important;
+  }
+
+  /* Button base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+           transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1
+           disabled:opacity-60 disabled:cursor-not-allowed select-none;
+  }
+
+  .btn-primary {
+    @apply btn active:scale-[0.98] shadow-sm;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    @apply btn active:scale-[0.98];
+    background-color: var(--card);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    background-color: var(--muted);
+  }
+
+  .btn-danger {
+    @apply btn active:scale-[0.98] shadow-sm;
+    background-color: var(--danger);
+    color: var(--danger-foreground);
+  }
+  .btn-danger:hover {
+    opacity: 0.9;
+  }
+
+  .btn-ghost {
+    @apply btn;
+    color: var(--muted-foreground);
+  }
+  .btn-ghost:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs min-h-[32px];
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base min-h-[48px];
+  }
+
+  /* Card */
+  .card {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+    @apply rounded-xl p-6 transition-colors duration-200;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 cursor-pointer;
+  }
+  .card-hover:hover {
+    box-shadow: var(--card-shadow-hover);
+    border-color: #cbd5e1;
+  }
+  .dark .card-hover:hover,
+  [data-theme="dark"] .card-hover:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Badge base */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  /* Page title */
+  .page-title {
+    @apply text-2xl lg:text-3xl font-bold;
+    color: var(--foreground);
+  }
+
+  /* Skeleton animation */
+  .skeleton {
+    @apply rounded animate-pulse;
+    background-color: var(--muted);
+  }
+}
+
+/* ─── Drag and Drop ─────────────────────────────────────────────────────────── */
+.task-card-dragging {
+  box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.45) !important;
+  transform: rotate(2deg) scale(1.02);
+  z-index: 9999;
+}
+
+.drop-column-over {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  border-color: var(--primary) !important;
+}
+
+/* ─── Micro Transitions ─────────────────────────────────────────────────────── */
+.fade-enter { animation: fadeIn 0.15s ease-out; }
+.slide-up-enter { animation: slideUp 0.2s ease-out; }
