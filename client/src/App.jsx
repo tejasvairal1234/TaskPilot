@@ -1,9 +1,7 @@
-import "./App.css";
+import AppRoutes from "./routes/AppRoutes.jsx";
 
 function App() {
-  const [count, setCount] = useState(0);
-
-  return <h1>Hello</h1>;
+  return <AppRoutes />;
 }
 
 export default App;
