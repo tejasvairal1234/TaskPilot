@@ -11,6 +11,7 @@ const TaskColumn = ({
   loading,
   onTaskDeleted,
   onTaskUpdated,
+  onTaskClick,
 }) => {
   const colors = STATUS_COLORS[columnId];
 
@@ -72,6 +73,7 @@ const TaskColumn = ({
                   index={index}
                   onDeleted={onTaskDeleted}
                   onUpdated={onTaskUpdated}
+                  onTaskClick={onTaskClick}
                 />
               ))
             )}
