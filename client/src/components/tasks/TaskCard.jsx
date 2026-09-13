@@ -14,7 +14,7 @@ import { taskService } from "../../services/taskService.js";
 import { getErrorMessage } from "../../utils/helpers.js";
 import toast from "react-hot-toast";
 
-const TaskCard = ({ task, index, onDeleted, onUpdated }) => {
+const TaskCard = ({ task, index, onDeleted, onUpdated, onTaskClick }) => {
   const navigate = useNavigate();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -44,8 +44,9 @@ const TaskCard = ({ task, index, onDeleted, onUpdated }) => {
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className={`card-hover cursor-grab active:cursor-grabbing select-none
-              ${snapshot.isDragging ? "task-card-dragging" : ""}
+            onClick={() => onTaskClick?.(task)}
+            className={`card-hover cursor-pointer select-none
+              ${snapshot.isDragging ? "task-card-dragging cursor-grabbing" : ""}
               animate-fade-in`}
             aria-label={`Task: ${task.title}`}
           >
