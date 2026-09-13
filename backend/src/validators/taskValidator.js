@@ -1,14 +1,26 @@
 import { z } from "zod";
 
 // Checklist item schema
-const checklistItemSchema = z.object({
-  text: z
-    .string()
-    .trim()
-    .min(1, "Checklist item cannot be empty")
-    .max(500, "Checklist item cannot exceed 500 characters"),
-  completed: z.boolean().default(false),
-});
+const checklistItemSchema = z
+  .object({
+    _id: z.any().optional(),
+    text: z
+      .string()
+      .trim()
+      .min(1, "Checklist item cannot be empty")
+      .max(500, "Checklist item cannot exceed 500 characters")
+      .optional(),
+    title: z
+      .string()
+      .trim()
+      .min(1, "Checklist item cannot be empty")
+      .max(500, "Checklist item cannot exceed 500 characters")
+      .optional(),
+    completed: z.boolean().default(false),
+  })
+  .refine((data) => data.text !== undefined || data.title !== undefined, {
+    message: "Checklist item text or title is required",
+  });
 
 // Attachment schema
 const attachmentSchema = z.object({
@@ -20,7 +32,8 @@ const attachmentSchema = z.object({
   url: z.string().url("Attachment URL must be a valid URL"),
 });
 
-const baseTaskSchema = z.object({
+// Base task field definitions without defaults (for safe partial updates)
+const taskFields = {
   title: z
     .string()
     .trim()
@@ -31,8 +44,7 @@ const baseTaskSchema = z.object({
     .string()
     .trim()
     .max(2000, "Description cannot exceed 2000 characters")
-    .optional()
-    .default(""),
+    .optional(),
 
   startDate: z.coerce
     .date({ error: "Invalid start date" })
@@ -43,32 +55,44 @@ const baseTaskSchema = z.object({
     .nullable()
     .optional(),
 
-  status: z.enum(["pending", "in-progress", "completed"]).optional().default("pending"),
+  status: z.enum(["pending", "in-progress", "completed"]).optional(),
 
-  priority: z.enum(["low", "medium", "high"]).optional().default("low"),
+  priority: z.enum(["low", "medium", "high"]).optional(),
 
   assignedTo: z
     .array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid user ID"))
-    .optional()
-    .default([]),
+    .optional(),
 
-  checklist: z.array(checklistItemSchema).optional().default([]),
+  checklist: z.array(checklistItemSchema).optional(),
 
-  attachments: z.array(attachmentSchema).optional().default([]),
-});
+  attachments: z.array(attachmentSchema).optional(),
+};
 
-export const createTaskSchema = baseTaskSchema.refine(
-  (data) => {
-    if (!data.dueDate || !data.startDate) return true;
-    return data.dueDate >= data.startDate;
-  },
-  {
-    message: "Due date cannot be before start date",
-    path: ["dueDate"],
-  }
-);
+// Schema for creating tasks - provides initial defaults for creation
+export const createTaskSchema = z
+  .object({
+    ...taskFields,
+    description: taskFields.description.default(""),
+    status: taskFields.status.default("pending"),
+    priority: taskFields.priority.default("low"),
+    assignedTo: taskFields.assignedTo.default([]),
+    checklist: taskFields.checklist.default([]),
+    attachments: taskFields.attachments.default([]),
+  })
+  .refine(
+    (data) => {
+      if (!data.dueDate || !data.startDate) return true;
+      return data.dueDate >= data.startDate;
+    },
+    {
+      message: "Due date cannot be before start date",
+      path: ["dueDate"],
+    }
+  );
 
-export const updateTaskSchema = baseTaskSchema
+// Schema for updating tasks - strictly partial, no default values injected for omitted fields
+export const updateTaskSchema = z
+  .object(taskFields)
   .partial()
   .refine(
     (data) => {
