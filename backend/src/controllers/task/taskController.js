@@ -83,15 +83,37 @@ export const createTask = asyncHandler(async (req, res) => {
     attachments,
   } = req.body;
 
+  let taskStatus = status || "pending";
+  let normalizedChecklist = checklist;
+
+  if (Array.isArray(checklist)) {
+    normalizedChecklist = checklist.map((item) => ({
+      text: item.text !== undefined ? item.text : item.title,
+      completed: Boolean(item.completed),
+    }));
+
+    const totalItems = normalizedChecklist.length;
+    if (totalItems > 0) {
+      const completedItems = normalizedChecklist.filter((item) => item.completed).length;
+      if (completedItems === 0) {
+        taskStatus = "pending";
+      } else if (completedItems === totalItems) {
+        taskStatus = "completed";
+      } else {
+        taskStatus = "in-progress";
+      }
+    }
+  }
+
   const task = await Task.create({
     title,
     description,
     startDate,
     dueDate,
-    status,
+    status: taskStatus,
     priority,
     assignedTo,
-    checklist,
+    checklist: normalizedChecklist,
     attachments,
     user: req.user._id,
   });
@@ -222,6 +244,34 @@ export const updateTask = asyncHandler(async (req, res) => {
   for (const field of updatableFields) {
     if (req.body[field] !== undefined) {
       task[field] = req.body[field];
+    }
+  }
+
+  // Automatic task status based on checklist business rule
+  if (req.body.checklist !== undefined && Array.isArray(req.body.checklist)) {
+    task.checklist = req.body.checklist.map((item) => {
+      const itemObj = {
+        text: item.text !== undefined ? item.text : item.title,
+        completed: Boolean(item.completed),
+      };
+      if (item._id) {
+        itemObj._id = item._id;
+      }
+      return itemObj;
+    });
+
+    const totalItems = task.checklist.length;
+    if (totalItems > 0) {
+      const completedItems = task.checklist.filter((item) => item.completed).length;
+      if (completedItems === 0) {
+        task.status = "pending";
+      } else if (completedItems === totalItems) {
+        task.status = "completed";
+      } else {
+        task.status = "in-progress";
+      }
+    } else if (req.body.status !== undefined) {
+      task.status = req.body.status;
     }
   }
 
