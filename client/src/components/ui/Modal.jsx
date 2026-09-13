@@ -8,6 +8,7 @@ const Modal = ({ isOpen, onClose, title, children, size = "md" }) => {
     sm: "max-w-sm",
     md: "max-w-lg",
     lg: "max-w-2xl",
+    "2xl": "max-w-3xl",
     xl: "max-w-4xl",
   };
 
@@ -52,20 +53,20 @@ const Modal = ({ isOpen, onClose, title, children, size = "md" }) => {
 
       {/* Panel */}
       <div
-        className={`relative w-full ${sizeMap[size]} bg-card border border-border text-card-foreground rounded-2xl shadow-2xl animate-slide-up overflow-hidden`}
+        className={`relative w-full ${sizeMap[size] || sizeMap.md} bg-card border border-border text-card-foreground rounded-2xl shadow-2xl animate-slide-up overflow-hidden max-h-[90vh] flex flex-col`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <h2
             id="modal-title"
-            className="text-lg font-semibold text-card-foreground"
+            className="text-lg font-semibold text-card-foreground truncate pr-4"
           >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label="Close dialog"
           >
             <X size={18} />
@@ -73,7 +74,7 @@ const Modal = ({ isOpen, onClose, title, children, size = "md" }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );
